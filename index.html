@@ -3008,9 +3008,15 @@ const App = () => {
   const [hearts, setHearts] = useState(0);
   const [name, setName] = useState("");
   const [records, setRecords] = useState({});
+  const isDemo = !isGAS && !(typeof GAS_URL === "string" && GAS_URL.startsWith("http"));
+  useEffect(() => {
+    if (isDemo && name) {
+      try { localStorage.setItem("mt_save_" + name, JSON.stringify({ mId, hearts, records })); } catch (e) {}
+    }
+  }, [name, mId, hearts, records]);
   const [ttsOn, setTtsOn] = useState(false); // 기본 꺼짐!
   const [showSidebar, setShowSidebar] = useState(false);
-  const DEF_NAMES = ["홍길동", "김민수", "이영희", "박지민", "최우주", "정하늘"];
+  const DEF_NAMES = Array.from({ length: 30 }, (_, i) => "학생" + (i + 1));
   const [names, setNames] = useState(DEF_NAMES);
   const [quizSets, setQuizSets] = useState(null);
   const mission = MISSIONS.find(m => m.id === mId);
@@ -3064,7 +3070,9 @@ const App = () => {
       별점: res?.rating || "",
       음성파일URL: res?.driveUrl || ""
     };
-    if (isGAS) {
+    if (isDemo) {
+      if (mId === TOTAL) { try { localStorage.removeItem("mt_save_" + name); } catch (e) {} }
+    } else if (isGAS) {
       google.script.run.saveRecord(pd);
     } else {
       callGAS("saveRecord", {
@@ -3095,6 +3103,13 @@ const App = () => {
   };
   const handleNameSelect = n => {
     setName(n);
+    if (isDemo) {
+      try {
+        const saved = JSON.parse(localStorage.getItem("mt_save_" + n) || "null");
+        if (saved && typeof saved.mId === "number") { setMId(saved.mId); setHearts(saved.hearts || 0); setRecords(saved.records || {}); }
+        else { setMId(1); setHearts(0); setRecords({}); }
+      } catch (e) { setMId(1); setHearts(0); setRecords({}); }
+    }
     setScreen("dashboard");
     initAudio();
   };
@@ -3336,7 +3351,7 @@ const App = () => {
     className: "flex gap-2 sm:gap-3 lg:gap-4 shrink-0"
   }, /*#__PURE__*/React.createElement("span", {
     className: "hidden sm:flex text-base sm:text-xl lg:text-2xl font-black text-slate-600 font-jua bg-slate-100 rounded-[1rem] sm:rounded-[1.5rem] px-3 sm:px-4 lg:px-6 py-1.5 sm:py-2 border-[2px] sm:border-[3px] border-slate-200 shadow-inner items-center min-w-0 whitespace-nowrap"
-  }, name || "홍길동"), /*#__PURE__*/React.createElement("div", {
+  }, name || "학생"), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1.5 sm:gap-2 bg-red-50 border-[2px] sm:border-[3px] border-red-200 px-3 sm:px-4 lg:px-6 py-1.5 sm:py-2 rounded-[1rem] sm:rounded-[1.5rem] shadow-inner shrink-0 whitespace-nowrap"
   }, /*#__PURE__*/React.createElement(IHeart, {
     s: 22,
@@ -3435,5 +3450,7 @@ const App = () => {
 };
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));
 </script>
+<div id="__demoBar" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#fffbeb;border-top:1px solid #fde68a;color:#92400e;font-size:13px;line-height:1.4;padding:8px 14px;text-align:center;font-family:'Noto Sans KR',sans-serif;box-shadow:0 -2px 8px rgba(0,0,0,.06)">체험 모드예요 · 활동 기록은 이 기기에만 저장돼요(이어하기 가능). 선생님이 구글 시트를 연결하면 시트에 저장됩니다.<span onclick="document.getElementById('__demoBar').style.display='none'" style="cursor:pointer;margin-left:12px;font-weight:bold">✕</span></div>
+<script>(function(){try{var c=/[#&]c=/.test(location.hash)||(localStorage.getItem('appServerUrl')||'').indexOf('http')===0;if(!c){var b=document.getElementById('__demoBar');if(b)b.style.display='block';}}catch(e){}})();</script>
 </body>
 </html>
