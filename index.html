@@ -1748,12 +1748,13 @@ const NameSelect = ({
         return;
       }
       sfxClick();
+      try { if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) { navigator.mediaDevices.getUserMedia({ audio: true }).then(st => st.getTracks().forEach(t => t.stop())).catch(() => {}); } } catch (e) {}
       onSelect(selName);
     },
     className: "px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-5 bg-green-500 text-white rounded-[1.2rem] sm:rounded-[1.5rem] text-xl sm:text-2xl lg:text-3xl font-black font-jua shadow-[0_5px_0_#15803d] sm:shadow-[0_6px_0_#15803d] active:translate-y-1 active:shadow-none whitespace-nowrap shrink-0"
   }, "시작! 🚀")), /*#__PURE__*/React.createElement("p", {
     className: "text-xs sm:text-sm text-slate-400 text-center mt-3 break-keep"
-  }, "💡 화면 위 🔇 아이콘을 누르면 소리를 켤 수 있어요"))));
+  }, "💡 화면 위 🔇 아이콘을 누르면 소리를 켤 수 있어요"), !isGAS && !isStudentMode && /*#__PURE__*/React.createElement("button", { onClick: () => { var b = document.getElementById("tsBtn"); if (b) b.click(); }, className: "mt-1 text-sm sm:text-base font-bold text-slate-500 underline font-jua shrink-0" }, "⚙️ 선생님 설정"))));
 };
 
 // ===== 사이드바 (글씨 크게, 여백만 줄임) =====
@@ -2952,8 +2953,9 @@ const TeacherSettings = () => {
     setTimeout(() => setCopied(false), 1800);
   };
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    id: "tsBtn",
+    hidden: true,
     onClick: () => setOpen(true),
-    style: { bottom: "4.5rem" },
     className: "fixed right-3 z-50 bg-white/90 backdrop-blur text-slate-600 text-sm font-bold px-4 py-2 rounded-full shadow-lg border-2 border-slate-200 active:scale-95"
   }, "⚙️ 선생님 설정"), open && /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4",
